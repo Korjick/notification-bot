@@ -25,7 +25,7 @@ public record ApplicationConfig(
     String telegramToken
 ) {
     @Bean
-    public Bot bot(InitialCommand initialCommand) {
+    public Bot bot() {
         return new Bot() {
             private final TelegramBot telegramBot = new TelegramBot(telegramToken);
 
@@ -35,11 +35,8 @@ public record ApplicationConfig(
             }
 
             @Override
-            public void init() {
-                telegramBot.setUpdatesListener(updates -> {
-                    updates.forEach(initialCommand::handle);
-                    return UpdatesListener.CONFIRMED_UPDATES_ALL;
-                });
+            public void setUpdatesListener(UpdatesListener updatesListener) {
+                telegramBot.setUpdatesListener(updatesListener);
             }
         };
     }

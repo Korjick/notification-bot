@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -23,11 +24,14 @@ public class HelpCommand extends Command {
     @Override
     protected boolean handleCommand(Update update) {
         if (update.message().text().equals(name())) {
+            List<String> commandsName = commands.stream().map(Command::name).collect(Collectors.toList());
+            commandsName.add(name());
+
             bot.execute(new SendMessage(
                 update.message().chat().id(),
                 String.format(
                     "Доступные комманды: %s",
-                    Arrays.toString(commands.stream().map(Command::name).toArray()))
+                    Arrays.toString(commandsName.toArray()))
             ));
             return true;
         }

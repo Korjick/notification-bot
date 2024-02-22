@@ -1,22 +1,17 @@
 package edu.java.bot.configuration;
 
 import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.UpdatesListener;
-import com.pengrad.telegrambot.request.BaseRequest;
-import com.pengrad.telegrambot.request.SendMessage;
-import com.pengrad.telegrambot.response.BaseResponse;
 import edu.java.bot.command.Command;
-import edu.java.bot.command.HelpCommand;
 import edu.java.bot.command.InitialCommand;
-import edu.java.bot.command.StartCommand;
-import edu.java.bot.core.Bot;
+import edu.java.bot.core.Link;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.validation.annotation.Validated;
-import java.util.ArrayList;
-import java.util.List;
 
 @Validated
 @ConfigurationProperties(prefix = "app", ignoreUnknownFields = false)
@@ -25,19 +20,20 @@ public record ApplicationConfig(
     String telegramToken
 ) {
     @Bean
-    public Bot bot() {
-        return new Bot() {
-            private final TelegramBot telegramBot = new TelegramBot(telegramToken);
+    public TelegramBot telegramBot() {
+        return new TelegramBot(telegramToken);
+    }
 
-            @Override
-            public <T extends BaseRequest<T, R>, R extends BaseResponse> void execute(BaseRequest<T, R> request) {
-                telegramBot.execute(request);
-            }
+    @Bean
+    public Command.Handler commandHandler(InitialCommand initialCommand, List<Command> commandList) {
+        return Command.Handler.build(
+            initialCommand,
+            commandList.stream().filter(c -> !c.equals(initialCommand)).toList()
+        );
+    }
 
-            @Override
-            public void setUpdatesListener(UpdatesListener updatesListener) {
-                telegramBot.setUpdatesListener(updatesListener);
-            }
-        };
+    @Bean
+    public Map<Long, Set<Link>> trackHandler(){
+        return new HashMap<>();
     }
 }

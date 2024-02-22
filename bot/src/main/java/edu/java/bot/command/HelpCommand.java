@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class HelpCommand extends Command {
 
-    private final Bot bot;
     private final List<Command> commands;
 
     @Override
@@ -22,7 +21,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    protected boolean handleCommand(Update update) {
+    protected boolean handleCommand(Bot bot, Update update) {
         if (update.message().text().equals(name())) {
             List<String> commandsName = commands.stream().map(Command::name).collect(Collectors.toList());
             commandsName.add(name());

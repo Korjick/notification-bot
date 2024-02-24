@@ -2,8 +2,8 @@ package edu.java.bot.command;
 
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import edu.java.bot.command.utils.CommandUtils;
-import edu.java.bot.core.utils.UserData;
+import edu.java.bot.command.utils.CommandParser;
+import edu.java.bot.core.dto.UserData;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -17,8 +17,8 @@ public class HelpCommand extends Command {
     private final List<Command> commands;
 
     @Autowired
-    public HelpCommand(MessageSource messageSource, Map<Long, UserData> trackHandler, List<Command> commands) {
-        super(messageSource, trackHandler);
+    public HelpCommand(MessageSource messageSource, Map<Long, UserData> trackHandler, CommandParser commandParser, List<Command> commands) {
+        super(messageSource, trackHandler, commandParser);
         this.commands = commands;
     }
 
@@ -28,7 +28,7 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public SendMessage handleCommand(Update update) {
+    public SendMessage handle(Update update) {
         Long chatId = update.message().chat().id();
         UserData data = trackHandler.get(chatId);
 
@@ -45,9 +45,9 @@ public class HelpCommand extends Command {
     private void formatHelp(StringBuilder builder, String name, Locale locale) {
         builder.append("\n%s%s%s".formatted(
             name,
-            CommandUtils.MESSAGE_SPLITTER,
+            CommandParser.MESSAGE_SPLITTER,
             messageSource.getMessage(
-                "command.%s.description".formatted(CommandUtils.peelCommandName(name)),
+                "command.%s.description".formatted(commandParser.peelCommandName(name)),
                 null,
                 locale
             )

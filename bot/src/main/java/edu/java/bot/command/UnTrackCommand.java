@@ -2,10 +2,10 @@ package edu.java.bot.command;
 
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import edu.java.bot.command.utils.CommandUtils;
+import edu.java.bot.command.utils.CommandParser;
 import edu.java.bot.command.utils.CommandWithLinks;
-import edu.java.bot.core.utils.Link;
-import edu.java.bot.core.utils.UserData;
+import edu.java.bot.core.dto.Link;
+import edu.java.bot.core.dto.UserData;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 public class UnTrackCommand extends Command {
 
     @Autowired
-    public UnTrackCommand(MessageSource messageSource, Map<Long, UserData> trackHandler) {
-        super(messageSource, trackHandler);
+    public UnTrackCommand(MessageSource messageSource, CommandParser commandParser, Map<Long, UserData> trackHandler) {
+        super(messageSource, trackHandler, commandParser);
     }
 
     @Override
@@ -25,12 +25,12 @@ public class UnTrackCommand extends Command {
     }
 
     @Override
-    public SendMessage handleCommand(Update update) {
+    public SendMessage handle(Update update) {
         Long chatId = update.message().chat().id();
         UserData data = trackHandler.get(chatId);
 
         String message = update.message().text();
-        CommandWithLinks parsed = CommandUtils.parseCommandWithLinks(message);
+        CommandWithLinks parsed = commandParser.parseCommandWithLinks(message);
 
         if (parsed.links().length < 1) {
             return new SendMessage(

@@ -1,4 +1,4 @@
-package edu.java.bot.core.utils;
+package edu.java.bot.core.dto;
 
 import java.util.Locale;
 import java.util.Set;

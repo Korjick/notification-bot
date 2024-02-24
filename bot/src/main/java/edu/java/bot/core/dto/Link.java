@@ -1,4 +1,4 @@
-package edu.java.bot.core.utils;
+package edu.java.bot.core.dto;
 
 import edu.java.bot.utils.Constants;
 import java.net.URI;
@@ -18,7 +18,8 @@ public record Link(
     private static final String QUERIES_SPLITTER = "&";
     private static final String QUERY_KEY_VALUE_SPLITTER = "=";
 
-    @Override public boolean equals(Object o) {
+    @Override
+    public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
@@ -34,7 +35,7 @@ public record Link(
         return Objects.hash(url);
     }
 
-    public static Link parseURL(String url) {
+    public static Link fromURL(String url) {
         try {
             URL uri = URI.create(url).toURL();
 

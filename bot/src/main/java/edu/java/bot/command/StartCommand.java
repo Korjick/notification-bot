@@ -2,8 +2,8 @@ package edu.java.bot.command;
 
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import edu.java.bot.command.utils.CommandUtils;
-import edu.java.bot.core.utils.UserData;
+import edu.java.bot.command.utils.CommandParser;
+import edu.java.bot.core.dto.UserData;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Locale;
@@ -15,12 +15,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class StartCommand extends Command {
 
-    private final Locale[] availableLocales;
+    private final Locale defaultLocale;
 
     @Autowired
-    public StartCommand(MessageSource messageSource, Map<Long, UserData> trackHandler, Locale[] availableLocales) {
-        super(messageSource, trackHandler);
-        this.availableLocales = availableLocales;
+    public StartCommand(MessageSource messageSource, Map<Long, UserData> trackHandler, CommandParser commandParser, Locale defaultLocale) {
+        super(messageSource, trackHandler, commandParser);
+        this.defaultLocale = defaultLocale;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class StartCommand extends Command {
     }
 
     @Override
-    public SendMessage handleCommand(Update update) {
+    public SendMessage handle(Update update) {
         Long chatId = update.message().chat().id();
         String userFirstName = update.message().chat().firstName();
 
@@ -37,7 +37,7 @@ public class StartCommand extends Command {
             trackHandler.put(
                 chatId,
                 new UserData(
-                    Arrays.stream(availableLocales).findFirst().orElse(null),
+                    defaultLocale,
                     new HashSet<>()
                 )
             );
@@ -55,6 +55,6 @@ public class StartCommand extends Command {
 
     @Override
     public boolean supports(Update update) {
-        return CommandUtils.isCommand(update.message().text(), name());
+        return commandParser.isCommand(update.message().text(), name());
     }
 }

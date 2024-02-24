@@ -3,6 +3,7 @@ package edu.java.bot.core;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.request.AbstractSendRequest;
 import com.pengrad.telegrambot.request.BaseRequest;
 import com.pengrad.telegrambot.response.BaseResponse;
 import edu.java.bot.service.CommandHandler;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Component
@@ -33,7 +35,11 @@ public class BotImpl implements Bot {
 
     @Override
     public int process(List<Update> updates) {
-        updates.forEach(update -> commandHandler.handle(this, update));
+        updates.forEach(update -> {
+            AbstractSendRequest<? extends AbstractSendRequest<?>> request = commandHandler.handle(update);
+            if (!Objects.isNull(request))
+                execute(request);
+        });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
 }

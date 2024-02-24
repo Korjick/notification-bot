@@ -2,7 +2,8 @@ package edu.java.bot.command;
 
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import edu.java.bot.core.utils.UserData;
+import edu.java.bot.command.utils.CommandParser;
+import edu.java.bot.core.dto.UserData;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -12,8 +13,8 @@ import org.springframework.stereotype.Component;
 public class ListCommand extends Command {
 
     @Autowired
-    public ListCommand(MessageSource messageSource, Map<Long, UserData> trackHandler) {
-        super(messageSource, trackHandler);
+    public ListCommand(MessageSource messageSource, CommandParser commandParser, Map<Long, UserData> trackHandler) {
+        super(messageSource, trackHandler, commandParser);
     }
 
     @Override
@@ -22,7 +23,7 @@ public class ListCommand extends Command {
     }
 
     @Override
-    public SendMessage handleCommand(Update update) {
+    public SendMessage handle(Update update) {
         Long chatId = update.message().chat().id();
         UserData data = trackHandler.get(chatId);
 

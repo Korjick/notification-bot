@@ -1,22 +1,45 @@
 package edu.java.bot.command.utils;
 
-import edu.java.bot.command.Command;
-import edu.java.bot.core.Link;
-import java.util.AbstractMap;
-import java.util.Map;
+import edu.java.bot.core.utils.Link;
+import edu.java.bot.utils.Constants;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class CommandUtils {
-    private static final String MESSAGE_SPLITTER = " ";
+    public static final String MESSAGE_SPLITTER = " ";
 
-    public static Map.Entry<Boolean, Link> parseCommandWithLink(Command command, String message) {
-        String[] splitted = message.split(MESSAGE_SPLITTER);
-        Link link = null;
-        boolean accurateCommand = false;
-        if(splitted.length > 1)
-        {
-            accurateCommand = command.name().equalsIgnoreCase(splitted[0]);
-            link = Link.parseURI(splitted[1]);
+    public static boolean isCommand(String message, String commandName) {
+        CommandWithParams commandWithParams = CommandUtils.parseCommandWithParams(message);
+        return commandWithParams.command().equals(commandName);
+    }
+
+    public static CommandWithParams parseCommandWithParams(String message) {
+        String[] split = message.split(MESSAGE_SPLITTER);
+        if (split.length == 1) {
+            return new CommandWithParams(split[0]);
+        } else if (split.length > 1) {
+            return new CommandWithParams(
+                split[0],
+                Arrays.copyOfRange(split, 1, split.length)
+            );
+        } else {
+            return new CommandWithParams(null);
         }
-        return new AbstractMap.SimpleEntry<>(accurateCommand, link);
+    }
+
+    public static CommandWithLinks parseCommandWithLinks(String message) {
+        CommandWithParams commandWithParams = parseCommandWithParams(message);
+        return new CommandWithLinks(
+            commandWithParams.command(),
+            Arrays
+                .stream(commandWithParams.params())
+                .map(Link::parseURL)
+                .filter(link -> !Objects.isNull(link))
+                .toArray(Link[]::new)
+        );
+    }
+
+    public static String peelCommandName(String commandName){
+        return commandName.replace("/", Constants.EMPTY_STRING);
     }
 }

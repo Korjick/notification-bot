@@ -2,13 +2,26 @@ package edu.java.bot.command;
 
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import edu.java.bot.core.Bot;
-import lombok.RequiredArgsConstructor;
+import edu.java.bot.command.utils.CommandUtils;
+import edu.java.bot.core.utils.UserData;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-public class StartCommand extends InitialCommand {
+public class StartCommand extends Command {
+
+    private final Locale[] availableLocales;
+
+    @Autowired
+    public StartCommand(MessageSource messageSource, Map<Long, UserData> trackHandler, Locale[] availableLocales) {
+        super(messageSource, trackHandler);
+        this.availableLocales = availableLocales;
+    }
 
     @Override
     public String name() {
@@ -16,12 +29,32 @@ public class StartCommand extends InitialCommand {
     }
 
     @Override
-    protected boolean handleCommand(Bot bot, Update update) {
-        if (update.message().text().equals(name())) {
-            bot.execute(new SendMessage(update.message().chat().id(),
-                String.format("Hello, %s", update.message().chat().firstName())));
-            return true;
+    public SendMessage handleCommand(Update update) {
+        Long chatId = update.message().chat().id();
+        String userFirstName = update.message().chat().firstName();
+
+        if (!trackHandler.containsKey(chatId)) {
+            trackHandler.put(
+                chatId,
+                new UserData(
+                    Arrays.stream(availableLocales).findFirst().orElse(null),
+                    new HashSet<>()
+                )
+            );
         }
-        return false;
+
+        return new SendMessage(
+            chatId,
+            messageSource.getMessage(
+                "command.start",
+                new Object[] {userFirstName},
+                trackHandler.get(chatId).locale()
+            )
+        );
+    }
+
+    @Override
+    public boolean supports(Update update) {
+        return CommandUtils.isCommand(update.message().text(), name());
     }
 }

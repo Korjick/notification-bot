@@ -1,39 +1,26 @@
 package edu.java.bot.command;
 
 import com.pengrad.telegrambot.model.Update;
-import edu.java.bot.core.Bot;
-import java.util.List;
+import com.pengrad.telegrambot.request.SendMessage;
+import edu.java.bot.command.utils.CommandUtils;
+import edu.java.bot.core.utils.UserData;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Component;
+import java.util.Map;
 
+@Component
+@RequiredArgsConstructor
 public abstract class Command {
-    private Command next;
+    protected final MessageSource messageSource;
+    protected final Map<Long, UserData> trackHandler;
 
     public abstract String name();
-    protected abstract boolean handleCommand(Bot bot, Update update);
 
-    @RequiredArgsConstructor
-    public static class Handler {
+    public abstract SendMessage handleCommand(Update update);
 
-        private final Command root;
-
-        public void handle(Bot bot, Update update) {
-            Command current = root;
-            while (current != null) {
-                if (current.handleCommand(bot, update))
-                    break;
-
-                current = current.next;
-            }
-        }
-
-        public static Handler build(Command first, List<Command> chain) {
-            Command current = first;
-            for (Command command : chain) {
-                current.next = command;
-                current = command;
-            }
-
-            return new Handler(first);
-        }
+    public boolean supports(Update update) {
+        return CommandUtils.isCommand(update.message().text(), name()) &&
+            trackHandler.containsKey(update.message().chat().id());
     }
 }

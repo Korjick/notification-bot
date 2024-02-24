@@ -2,19 +2,19 @@ package edu.java.bot.command;
 
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import edu.java.bot.core.Bot;
-import edu.java.bot.core.Link;
-import java.util.Arrays;
+import edu.java.bot.core.utils.UserData;
 import java.util.Map;
-import java.util.Set;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class ListCommand extends Command {
 
-    private final Map<Long, Set<Link>> trackHandler;
+    @Autowired
+    public ListCommand(MessageSource messageSource, Map<Long, UserData> trackHandler) {
+        super(messageSource, trackHandler);
+    }
 
     @Override
     public String name() {
@@ -22,22 +22,23 @@ public class ListCommand extends Command {
     }
 
     @Override
-    protected boolean handleCommand(Bot bot, Update update) {
+    public SendMessage handleCommand(Update update) {
         Long chatId = update.message().chat().id();
-        if (update.message().text().equals(name())) {
-            if(trackHandler.containsKey(chatId)) {
-                bot.execute(
-                    new SendMessage(
-                        chatId,
-                        Arrays.toString(trackHandler.get(chatId).toArray())));
-            } else {
-                bot.execute(
-                    new SendMessage(chatId,
-                        "Пользователь не подписан на обновление ресурсов"));
-            }
+        UserData data = trackHandler.get(chatId);
 
-            return true;
+        if (!data.trackLinks().isEmpty()) {
+            StringBuilder stringBuilder = new StringBuilder();
+            data.trackLinks().forEach(link -> stringBuilder.append("\n%s".formatted(link.url())));
+            stringBuilder.insert(
+                0,
+                messageSource.getMessage("command.list.exist", null, data.locale())
+            );
+            return new SendMessage(chatId, stringBuilder.toString());
+        } else {
+            return new SendMessage(
+                chatId,
+                messageSource.getMessage("command.list.empty", null, data.locale())
+            );
         }
-        return false;
     }
 }
